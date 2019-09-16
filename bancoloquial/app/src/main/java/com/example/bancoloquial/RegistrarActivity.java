@@ -1,6 +1,8 @@
 package com.example.bancoloquial;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -24,6 +26,7 @@ import static android.provider.ContactsContract.CommonDataKinds.Website.URL;
 public class RegistrarActivity extends AppCompatActivity {
 EditText etIdent,etNombre,etCorreo,etClave,etClave2;
 Button btnRegistrar;
+    String ident, nombre, email, clave;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,35 +41,79 @@ Button btnRegistrar;
         btnRegistrar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                    ejecutarservicio("http://172.16.22.19:8087/Volley/registro.php");
+                registrarUsuario("http://192.168.1.57:90/bancoweb/registro.php");
+                crearCuenta("http://192.168.1.57:90/bancoweb/crearcuenta.php");
             }
         });
-
     }
-    private void ejecutarservicio(String URL){
-        StringRequest stringRequest=new StringRequest(Request.Method.POST, URL, new Response.Listener<String>() {
+    private void crearCuenta(String s) {
+        ident = etIdent.getText().toString();
+
+        StringRequest rqusuario = new StringRequest(Request.Method.POST, s, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                Toast.makeText(getApplicationContext(),"El cliente ha sido ingresado satisfactoriamente",Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Cuenta creada", Toast.LENGTH_LONG).show();
+
+                Intent i = new Intent(getApplicationContext(),MainActivity.class);
+                startActivity(i);
+
             }
-        }, new ErrorListener() {
+        }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Toast.makeText(getApplicationContext(),error.toString(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), error.toString(), Toast.LENGTH_SHORT).show();
             }
-        }){
+        })
+        {
+            // Pasa los datos en formato JSON a la BD
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
-                Map<String,String>parametros=new HashMap<String, String>();
-                parametros.put("ident",etIdent.getText().toString());
-                parametros.put("nombre",etNombre.getText().toString());
-                parametros.put("email",etCorreo.getText().toString());
-                parametros.put("clave",etClave.getText().toString());
+                Map<String,String> parametros=new HashMap<String, String>();
+                parametros.put("ident",ident);
+                parametros.put("saldo","50000");
                 return parametros;
             }
         };
         RequestQueue requestQueue= Volley.newRequestQueue(this);
-        requestQueue.add(stringRequest);
+        requestQueue.add(rqusuario);
+    }
+
+    private void registrarUsuario(String url){
+
+        ident = etIdent.getText().toString();
+        nombre = etNombre.getText().toString();
+        email = etCorreo.getText().toString();
+        clave = etClave.getText().toString();
+
+
+        StringRequest rqusuario = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Toast.makeText(getApplicationContext(), "Registro exitoso", Toast.LENGTH_LONG).show();
+
+                Intent i = new Intent(getApplicationContext(),MainActivity.class);
+                startActivity(i);
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Toast.makeText(getApplicationContext(), error.toString(), Toast.LENGTH_SHORT).show();
+            }
+        })
+        {
+            // Pasa los datos en formato JSON a la BD
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String,String> parametros=new HashMap<String, String>();
+                parametros.put("ident",ident);
+                parametros.put("nombre",nombre);
+                parametros.put("email",email);
+                parametros.put("clave",clave);
+                return parametros;
+            }
+        };
+        RequestQueue requestQueue= Volley.newRequestQueue(this);
+        requestQueue.add(rqusuario);
     }
 }

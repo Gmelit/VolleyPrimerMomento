@@ -29,85 +29,69 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements Response.Listener<JSONObject>, Response.ErrorListener {
-    EditText etident,etclave;
+    EditText etident, etclave;
     Button ingresar;
     RequestQueue rq;
     JsonRequest jrq;
     TextView tvRegistrar;
-    Button btn;
+    Button btn,btneditar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        etclave=findViewById(R.id.etclave);
-        etident=findViewById(R.id.etident);
-        tvRegistrar=findViewById(R.id.tvRegistrar);
-        btn=findViewById(R.id.button);
+        etclave = findViewById(R.id.etclave);
+        etident = findViewById(R.id.etident);
+        tvRegistrar = findViewById(R.id.tvRegistrar);
+        btn = findViewById(R.id.button);
+        rq = Volley.newRequestQueue(this);
+
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ejecutarservicio("http:172.16.22.19:8087/Volley/login.php");
+                iniciarses();
+            }
+        });
+        tvRegistrar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent in= new Intent(getApplicationContext(),RegistrarActivity.class);
+                startActivity(in);
             }
         });
     }
-    public void ingreasr() {
-        Intent in=new Intent(getApplicationContext (),InicioActivity.class);
-        in.putExtra ( "ident",etident.getText ().toString ());
-        startActivity ( in );
+
+    private void crearCliente(){
+        Intent i = new Intent(this,RegistrarActivity.class);
+        startActivity(i);
     }
 
-    public void registrar(View view) {
-        Intent inte = new Intent(getApplicationContext(), RegistrarActivity.class);
-        startActivity(inte);
-    }
-
-
-    private void ejecutarservicio(String URL){
-        StringRequest stringRequest=new StringRequest(Request.Method.POST, URL, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                if(response.trim ().equals ( "success" )){
-                    ingreasr ();
-                }else{
-                    Toast.makeText ( getApplicationContext (),"Error este usuario no existe",Toast.LENGTH_SHORT ).show();
-                }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Toast.makeText(getApplicationContext(),error.toString(), Toast.LENGTH_SHORT).show();
-            }
-        }){
-            @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-                Map<String,String>parametros=new HashMap<String, String>();
-                parametros.put("ident",etident.getText().toString());
-                parametros.put("clave",etclave.getText().toString());
-                return parametros;
-            }
-        };
-        RequestQueue requestQueue= Volley.newRequestQueue(this);
-        requestQueue.add(stringRequest);
+    private void iniciarses() {
+        String url = "http://192.168.1.57:90/bancoweb/sesion.php?ident="+etident.getText().toString()+"&clave="+etclave.getText().toString();
+        jrq = new JsonObjectRequest(Request.Method.GET,url,null,this,this);
+        rq.add(jrq);
     }
 
     @Override
-    public void onErrorResponse ( VolleyError error ) {
-
+    public void onErrorResponse(VolleyError error) {
+        Toast.makeText(this, "Nombre de usuario o contraseña incorrecto.", Toast.LENGTH_LONG).show();
     }
 
     @Override
-    public void onResponse ( JSONObject response ) {
+    public void onResponse(JSONObject response) {
+        //Toast.makeText(this, "Bienvenido", Toast.LENGTH_LONG).show();
 
+        //instanciar el objeto
         Cliente cli = new Cliente();
 
-        JSONArray jsonusuario = response.optJSONArray("info");
+        JSONArray jsonusuario = response.optJSONArray("datos");
 
         JSONObject ocliente = null;
         try {
             ocliente = jsonusuario.getJSONObject(0);
-            cli.setIdent(ocliente.optString ("ident"));
+            cli.setIdent(ocliente.optString("ident"));
             cli.setEmail(ocliente.optString("email"));
-            cli.setNombres (ocliente.optString("nombre"));
+            cli.setNombres(ocliente.optString("nombre"));
             cli.setClave(ocliente.optString("clave"));
         }
         catch (JSONException e)
@@ -122,4 +106,6 @@ public class MainActivity extends AppCompatActivity implements Response.Listener
         intencion.putExtra("clave", cli.getClave());
         startActivity(intencion);
     }
+
+
 }

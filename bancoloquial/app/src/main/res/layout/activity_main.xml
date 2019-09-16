@@ -63,7 +63,6 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:background="@color/colorPrimary"
-        android:onClick="ingresar"
         android:text="Ingresar"
         app:layout_constraintBottom_toTopOf="@+id/guideline2"
         app:layout_constraintEnd_toEndOf="parent"
@@ -72,7 +71,6 @@
         app:layout_constraintTop_toBottomOf="@+id/etclave"
         app:layout_constraintVertical_bias="0.443" />
     <TextView
-            android:onClick="registrar"
             android:textColor="@color/colorAccent"
             android:text="¿Aun no estas registrado? registrate aqui."
             android:layout_width="wrap_content"
